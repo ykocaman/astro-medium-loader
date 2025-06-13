@@ -1,6 +1,6 @@
 {
   "name": "@ykocaman/astro-medium-loader",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Astro plugin to fetch Medium feeds by username",
   "author": "https://ykocaman.dev",
   "type": "module",
