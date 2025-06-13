@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@ykocaman/astro-medium-loader':
-        specifier: link:../../yusuf/.local/share/pnpm/global/5/node_modules/@ykocaman/astro-medium-loader
-        version: link:../../yusuf/.local/share/pnpm/global/5/node_modules/@ykocaman/astro-medium-loader
       rss-parser:
         specifier: ^3.12.0
         version: 3.13.0
