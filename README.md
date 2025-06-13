@@ -11,8 +11,7 @@ pnpm install @ykocaman/astro-medium-loader
 ## Usage
 
 ```tsx
-//content.config.ts
-
+// content.config.ts
 import { defineCollection } from 'astro:content';
 import { mediumLoader } from "@ykocaman/astro-medium-loader";
 
@@ -24,10 +23,9 @@ export const collections = { medium };
 ```
 
 ```tsx
-//index.astro
+// index.astro
 ---
 import { getCollection } from 'astro:content';
-
 const posts = await getCollection('medium');
 ---
 
@@ -35,3 +33,10 @@ const posts = await getCollection('medium');
 	<Content />
 </BlogPost>
 ```
+
+## Options
+- `username`: Medium username (without the `@`)
+- `cache`: Enable/disable caching (recommended: `true` for production)
+
+## License
+MIT
