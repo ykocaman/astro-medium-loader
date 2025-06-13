@@ -13,7 +13,7 @@ export interface MediumPost {
 
 export interface MediumConfig {
     username: string;
-    storage: {
+    storage?: {
         enabled: boolean;
         path: string;
     }
