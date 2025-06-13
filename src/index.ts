@@ -9,7 +9,9 @@ export interface MediumPost {
     title?: string;
     link?: string;
     pubDate?: Date;
+    updatedDate?: Date;
     isoDate?: Date;
+    description?: string;
     content?: string;
     creator?: string;
     categories?: string[];
@@ -26,7 +28,9 @@ export function mediumLoader({username, cache}: {username: string, cache: boolea
         title: z.string(),
         link: z.string().url(),
         pubDate: z.date(),
+        updatedDate: z.date().optional(),
         isoDate: z.date(),
+        description: z.string().optional(),
         content: z.string().optional(),
         creator: z.string().optional(),
         categories: z.array(z.string()).optional(),
@@ -81,7 +85,7 @@ async function fetchMediumPosts(username: string): Promise<MediumPost[]> {
         throw new Error(`Failed to parse Medium RSS feed for @${username}: ${err instanceof Error ? err.message : String(err)}`);
     }
 
-    return (feed.items).map((item: Parser.Item & { ["content:encoded"]?: string }) => {
+    return (feed.items).map((item: Parser.Item & { ["content:encoded"]?: string, ["content:encodedSnippet"]?: string  }) => {
 
         let id = item.link;
         if (item.guid) {
@@ -95,14 +99,22 @@ async function fetchMediumPosts(username: string): Promise<MediumPost[]> {
             if (match) heroImage = match[1];
         }
 
+        let description: string | undefined;
+        if (item['content:encodedSnippet']) {
+            const words = item['content:encodedSnippet'].match(/\S+/g) || [];
+            description = words.slice(0, 32).join(' ') + (words.length > 32 ? '...' : '');
+        }
+
         return {
             title: item.title,
             link: item.link,
             pubDate: item.pubDate ? new Date(item.pubDate) : new Date(0),
+            updatedDate: item.pubDate ? new Date(item.pubDate) :  new Date(0),
             isoDate: item.isoDate ? new Date(item.isoDate) : new Date(0),
             content: item['content:encoded'],
             creator: item.creator,
             categories: item.categories,
+            description,
             heroImage,
             id
         };
