@@ -6,13 +6,12 @@ import type { Loader, LoaderContext } from "astro/loaders";
 
 export interface MediumPost {
     slug: string;
-    title?: string;
-    link?: string;
-    pubDate?: Date;
-    isoDate?: Date;
-    description?: string;
+    title: string;
+    link: string;
+    isoDate: Date;
+    pubDate: Date;
+    description: string;
     content: string;
-    creator?: string;
     categories?: string[];
     heroImage?: string;
     [key: string]: any;
@@ -25,12 +24,12 @@ export function mediumLoader({ username, cache }: { username: string, cache: boo
             z.object({
                 title: z.string(),
                 link: z.string().url(),
+                isoDate: z.date(),
                 pubDate: z.date(),
                 updatedDate: z.date().optional(),
-                isoDate: z.date(),
                 description: z.string(),
                 content: z.string(),
-                creator: z.string(),
+                canonical: z.string(),
                 categories: z.array(z.string()).optional(),
                 heroImage: z.string().optional(),
                 source: z.string().default('medium'),
@@ -41,7 +40,7 @@ export function mediumLoader({ username, cache }: { username: string, cache: boo
             store.clear();
 
             for (const post of posts) {
-                
+
                 const data = await parseData({
                     id: post.slug,
                     data: post,
@@ -50,7 +49,7 @@ export function mediumLoader({ username, cache }: { username: string, cache: boo
                 store.set({
                     id: post.slug,
                     data,
-                    rendered: await renderMarkdown(post.content),
+                    rendered: await renderMarkdown(post.content + post.canonical),
                 });
             }
         }
@@ -92,7 +91,7 @@ async function fetchMediumPosts(username: string): Promise<MediumPost[]> {
 
     return (feed.items).map((item: Parser.Item & { ["content:encoded"]?: string, ["content:encodedSnippet"]?: string }) => {
 
-        let slug = item.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        let slug: string = item.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || item.link?.split('/').pop() || '';
 
         let heroImage: string | undefined;
         if (item['content:encoded']) {
@@ -100,23 +99,29 @@ async function fetchMediumPosts(username: string): Promise<MediumPost[]> {
             if (match) heroImage = match[1];
         }
 
-        let description: string | undefined;
+        let description: string = '';
         if (item['content:encodedSnippet']) {
             const words = item['content:encodedSnippet'].match(/\S+/g) || [];
             description = words.slice(0, 32).join(' ') + (words.length > 32 ? '...' : '');
         }
 
+        let content: string = item['content:encoded'] || '';
+        // Remove <p>was originally published in ...</p> if present, because we will add a canonical link to the original post
+        content = content.replace(/<hr><p>[\s\S]*?was originally published in[\s\S]*?<\/p>/i, '');
+
+        let canonical: string = `<hr><p>Read the original post on: <a href="${item.link}" rel="canonical" target="_blank">${item.title}</a></p>`;
+
         return {
-            title: item.title,
-            link: item.link,
+            title: item.title || '',
+            link: item.link || '',
             pubDate: item.pubDate ? new Date(item.pubDate) : new Date(0),
             isoDate: item.isoDate ? new Date(item.isoDate) : new Date(0),
-            content: item['content:encoded'] || '',
-            creator: item.creator,
-            categories: item.categories,
+            categories: item.categories || [],
             description,
+            content,
+            canonical,
             heroImage,
-            slug: slug || ''
+            slug
         };
     });
 }
