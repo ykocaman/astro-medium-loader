@@ -121,7 +121,7 @@ const { Content } = await render(post);
 | ----------------- | ------- | ------- | --------------------------------------------------------------------------------------------- |
 | `username`        | string  | —       | Medium username (without the `@`)                                                             |
 | `storage.enabled` | boolean | `false` | Enable caching or persistent storage                                                          |
-| `storage.path`    | string  | —       | Path to the cache or content directory (e.g. `.astro/storage/medium` or `src/content/medium`) |
+| `storage.path`    | string  | `.astro/storage/medium` | Path to the cache or content directory (e.g. `.astro/storage/medium` or `src/content/medium`) |
 
 ## Features
 
