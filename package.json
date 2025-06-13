@@ -13,17 +13,23 @@
     "LICENSE",
     "README.md"
   ],
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
   "scripts": {
     "build": "tsc",
     "prepare": "npm run build"
   },
   "keywords": [
+    "astro",
     "astro-loader",
+    "astro-component",
     "feed",
     "medium",
-    "astro-plugin",
-    "astro",
-    "rss"
+    "rss",
+    "withastro"
   ],
   "license": "MIT",
   "peerDependencies": {
