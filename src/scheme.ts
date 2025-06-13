@@ -15,6 +15,6 @@ export interface MediumConfig {
     username: string;
     storage?: {
         enabled: boolean;
-        path: string;
+        path?: string;
     }
 }

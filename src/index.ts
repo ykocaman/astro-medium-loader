@@ -1,9 +1,14 @@
 import { z } from "astro/zod";
 import type { Loader, LoaderContext } from "astro/loaders";
-import type {  MediumConfig } from './scheme.js';
+import type { MediumConfig } from './scheme.js';
 import { getMediumPosts } from "./medium.js";
 
-export function mediumLoader({ username, storage = { enabled: false, path: '.astro/storage/medium' } }: MediumConfig): Loader {
+export function mediumLoader({ username, storage }: MediumConfig): Loader {
+    storage = { ...{ enabled: false, path: '.astro/cache/medium' }, ...storage };
+
+    if (!username) {
+        throw new Error('Medium username is required');
+    }
     return {
         name: 'medium-loader',
         schema: () =>

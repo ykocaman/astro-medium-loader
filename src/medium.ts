@@ -3,10 +3,7 @@ import { fromStorage, toStorage } from './storage.js';
 import type { MediumConfig } from './scheme.js';
 import type { MediumPost } from './scheme';
 
-export async function getMediumPosts({ username, storage = { enabled: false, path: '.astro/cache/medium' } }: MediumConfig): Promise<MediumPost[]> {
-    if (!username) {
-        throw new Error('Medium username is required');
-    }
+export async function getMediumPosts({ username, storage = { enabled: false, path: '.' } }: MediumConfig): Promise<MediumPost[]> {
     const STORAGE_FILE = `${storage.path}/${username}.json`;
     let posts: MediumPost[] = [];
 
