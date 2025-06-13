@@ -15,9 +15,9 @@ export function fromStorage(file: string): MediumPost[] {
         return JSON.parse(cached).map((item: any) => {
             return {
                 ...item,
-                pubDate: item.pubDate ? new Date(item.pubDate) : new Date(0),
-                updatedDate: item.updatedDate ? new Date(item.updatedDate) : new Date(0),
-                isoDate: item.isoDate ? new Date(item.isoDate) : new Date(0),
+                pubDate: item.pubDate ? new Date(item.pubDate) : undefined,
+                updatedDate: item.updatedDate ? new Date(item.updatedDate) : undefined,
+                isoDate: item.isoDate ? new Date(item.isoDate) : undefined,
             };
         });
     } catch (err) {
