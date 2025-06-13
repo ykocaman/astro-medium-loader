@@ -2,54 +2,59 @@ import Parser from 'rss-parser';
 import { existsSync, readFileSync, mkdirSync, writeFileSync } from 'fs';
 import path from 'path';
 import { z } from "astro/zod";
-import type { Loader } from "astro/loaders";
+import type { Loader, LoaderContext } from "astro/loaders";
 
 export interface MediumPost {
-    id?: string;
+    slug: string;
     title?: string;
     link?: string;
     pubDate?: Date;
-    updatedDate?: Date;
     isoDate?: Date;
     description?: string;
-    content?: string;
+    content: string;
     creator?: string;
     categories?: string[];
     heroImage?: string;
     [key: string]: any;
 }
 
-export function mediumLoader({username, cache}: {username: string, cache: boolean}): Loader {
-  return {
-    name: 'medium-loader',
-    schema: () =>
-      z.object({
-        id: z.string(),
-        title: z.string(),
-        link: z.string().url(),
-        pubDate: z.date(),
-        updatedDate: z.date().optional(),
-        isoDate: z.date(),
-        description: z.string().optional(),
-        content: z.string().optional(),
-        creator: z.string().optional(),
-        categories: z.array(z.string()).optional(),
-        heroImage: z.string().optional(),
-        source: z.string().default('medium'),
-        external: z.boolean().default(true),
-      }),
-    async load({ store, parseData }: any) {
-      const posts = await getMediumPosts(username, cache);
-      store.clear();
-      for (const post of posts) {
-        const data = await parseData({
-          id: post.id,
-          data: post,
-        });
-        store.set({ id: post.id, data });
-      }
-    }
-  };
+export function mediumLoader({ username, cache }: { username: string, cache: boolean }): Loader {
+    return {
+        name: 'medium-loader',
+        schema: () =>
+            z.object({
+                title: z.string(),
+                link: z.string().url(),
+                pubDate: z.date(),
+                updatedDate: z.date().optional(),
+                isoDate: z.date(),
+                description: z.string(),
+                content: z.string(),
+                creator: z.string(),
+                categories: z.array(z.string()).optional(),
+                heroImage: z.string().optional(),
+                source: z.string().default('medium'),
+                external: z.boolean().default(true),
+            }),
+        load: async ({ store, parseData, renderMarkdown }: LoaderContext) => {
+            const posts = await getMediumPosts(username, cache);
+            store.clear();
+
+            for (const post of posts) {
+                
+                const data = await parseData({
+                    id: post.slug,
+                    data: post,
+                });
+
+                store.set({
+                    id: post.slug,
+                    data,
+                    rendered: await renderMarkdown(post.content),
+                });
+            }
+        }
+    };
 }
 export async function getMediumPosts(username: string, cache: boolean): Promise<MediumPost[]> {
     if (!username) {
@@ -85,13 +90,9 @@ async function fetchMediumPosts(username: string): Promise<MediumPost[]> {
         throw new Error(`Failed to parse Medium RSS feed for @${username}: ${err instanceof Error ? err.message : String(err)}`);
     }
 
-    return (feed.items).map((item: Parser.Item & { ["content:encoded"]?: string, ["content:encodedSnippet"]?: string  }) => {
+    return (feed.items).map((item: Parser.Item & { ["content:encoded"]?: string, ["content:encodedSnippet"]?: string }) => {
 
-        let id = item.link;
-        if (item.guid) {
-            const match = item.guid.match(/\/p\/([a-zA-Z0-9]+)$/);
-            if (match) id = match[1];
-        }
+        let slug = item.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
         let heroImage: string | undefined;
         if (item['content:encoded']) {
@@ -109,14 +110,13 @@ async function fetchMediumPosts(username: string): Promise<MediumPost[]> {
             title: item.title,
             link: item.link,
             pubDate: item.pubDate ? new Date(item.pubDate) : new Date(0),
-            updatedDate: item.pubDate ? new Date(item.pubDate) :  new Date(0),
             isoDate: item.isoDate ? new Date(item.isoDate) : new Date(0),
-            content: item['content:encoded'],
+            content: item['content:encoded'] || '',
             creator: item.creator,
             categories: item.categories,
             description,
             heroImage,
-            id
+            slug: slug || ''
         };
     });
 }
@@ -130,7 +130,14 @@ function fromCache(file: string): MediumPost[] {
     try {
         const cached = readFileSync(file, 'utf-8');
         console.log('Loaded Medium RSS feed from cache:', file);
-        return JSON.parse(cached);
+        return JSON.parse(cached).map((item: any) => {
+            return {
+                ...item,
+                pubDate: item.pubDate ? new Date(item.pubDate) : new Date(0),
+                updatedDate: item.updatedDate ? new Date(item.updatedDate) : new Date(0),
+                isoDate: item.isoDate ? new Date(item.isoDate) : new Date(0),
+            };
+        });
     } catch (err) {
         console.warn('Failed to load Medium RSS feed from cache:', err);
         return [];
