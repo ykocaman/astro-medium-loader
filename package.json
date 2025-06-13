@@ -2,10 +2,15 @@
   "name": "@ykocaman/astro-medium-loader",
   "version": "0.1.3",
   "description": "Astro plugin to fetch Medium feeds by username",
+  "author": "https://ykocaman.dev",
+  "type": "module",
+  "homepage": "https://github.com/ykocaman/astro-medium-loader/blob/main/README.md",
+  "bugs": "https://github.com/ykocaman/astro-medium-loader/issues",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist",
+    "LICENSE",
     "README.md"
   ],
   "scripts": {
@@ -15,7 +20,10 @@
   "keywords": [
     "astro-loader",
     "feed",
-    "medium"
+    "medium",
+    "astro-plugin",
+    "astro",
+    "rss"
   ],
   "license": "MIT",
   "peerDependencies": {
