@@ -38,7 +38,7 @@ async function fetchMediumPosts(username: string): Promise<MediumPost[]> {
 
     return (feed.items).map((item: Parser.Item & { ["content:encoded"]?: string, ["content:encodedSnippet"]?: string }) => {
 
-        let slug: string = item.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || item.link?.split('/').pop() || '';
+        let slug: string = item.title?.toLocaleLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || item.link?.split('/').pop() || '';
 
         let heroImage: string | undefined;
         if (item['content:encoded']) {
