@@ -1,6 +1,7 @@
 {
   "name": "@ykocaman/astro-medium-loader",
   "version": "0.2.4-2",
+  "packageManager": "pnpm@11.13.0",
   "description": "Astro plugin to fetch Medium feeds by username",
   "author": "https://ykocaman.dev",
   "type": "module",
@@ -23,7 +24,8 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsc",
-    "prepare": "npm run build"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "astro",
@@ -35,16 +37,19 @@
     "withastro"
   ],
   "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
   "peerDependencies": {
-    "astro": "^6.1.6"
+    "astro": "^7.0.0"
   },
   "dependencies": {
     "rss-parser": "^3.12.0"
   },
   "devDependencies": {
-    "@types/node": "^24.0.1",
-    "astro": "^6.1.6",
-    "typescript": "^5.0.0"
+    "@types/node": "^26.0.0",
+    "astro": "^7.0.0",
+    "typescript": "^7.0.0"
   },
   "repository": {
     "type": "git",
