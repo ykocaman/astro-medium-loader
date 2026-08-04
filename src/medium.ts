@@ -48,7 +48,7 @@ async function fetchMediumPosts(username: string): Promise<MediumPost[]> {
         ?.toLocaleLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '') ||
-      item.link?.split('/').pop() ||
+      item.link?.split('?')[0]?.split('/').filter(Boolean).pop() ||
       '';
 
     let heroImage: string | undefined;
