@@ -15,18 +15,11 @@
 		"declarationMap": true,
 		"module": "ESNext",
 		"outDir": "./dist",
-		"lib": [
-			"es2022",
-			"dom"
-		],
-		"types": [
-			"node"
-		],
+		"lib": ["es2022", "dom"],
+		"types": ["node"],
 		"allowImportingTsExtensions": false,
 		"noEmit": false,
 		"rootDir": "./src"
 	},
-	"include": [
-		"src/**/*"
-	]
+	"include": ["src/**/*"]
 }
