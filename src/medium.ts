@@ -135,7 +135,7 @@ function slugFromUrl(url: string): string {
  * Uses locale-independent lowercase + Unicode normalization so Turkish
  * (and other accented) characters become ASCII instead of being dropped.
  */
-function slugify(input: string): string {
+export function slugify(input: string): string {
 	return input
 		.toLowerCase()
 		.normalize('NFKD')

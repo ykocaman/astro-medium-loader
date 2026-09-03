@@ -28,6 +28,7 @@
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
 		"format": "biome format --write .",
+		"test": "vitest run",
 		"prepublishOnly": "npm run build"
 	},
 	"keywords": [
@@ -53,7 +54,8 @@
 		"@biomejs/biome": "^2.5.7",
 		"@types/node": "^26.0.0",
 		"astro": "^7.0.0",
-		"typescript": "^7.0.0"
+		"typescript": "^7.0.0",
+		"vitest": "^3.2.4"
 	},
 	"repository": {
 		"type": "git",
