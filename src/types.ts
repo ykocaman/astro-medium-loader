@@ -7,6 +7,12 @@ export interface MediumPost {
 	updatedDate?: Date;
 	description: string;
 	content: string;
+	/**
+	 * HTML attribution block (an `<hr>` + link back to the original Medium
+	 * post), not a canonical URL. Appended after `content` when rendering
+	 * (see `rendered.html` in the loader). Kept as `canonical` for API
+	 * stability since this is a public schema field.
+	 */
 	canonical: string;
 	categories?: string[];
 	heroImage?: string;

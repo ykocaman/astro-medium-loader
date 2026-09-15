@@ -1,6 +1,6 @@
 import type { Loader, LoaderContext } from 'astro/loaders';
 import { z } from 'astro/zod';
-import { DEFAULT_STORAGE_PATH, getMediumPosts } from './medium.js';
+import { getMediumPosts } from './medium.js';
 import type { MediumConfig } from './types.js';
 
 export function mediumLoader({ username, storage }: MediumConfig): Loader {
@@ -9,11 +9,6 @@ export function mediumLoader({ username, storage }: MediumConfig): Loader {
 	}
 	// Accept "@username" and normalize to "username" so the feed URL is always well-formed
 	username = username.replace(/^@/, '');
-
-	const resolvedStorage = {
-		enabled: storage?.enabled ?? false,
-		path: storage?.path ?? DEFAULT_STORAGE_PATH,
-	};
 
 	return {
 		name: 'medium-loader',
@@ -32,10 +27,7 @@ export function mediumLoader({ username, storage }: MediumConfig): Loader {
 			external: z.boolean().default(true),
 		}),
 		load: async ({ store, parseData }: LoaderContext) => {
-			const posts = await getMediumPosts({
-				username,
-				storage: resolvedStorage,
-			});
+			const posts = await getMediumPosts({ username, storage });
 			store.clear();
 
 			for (const post of posts) {
