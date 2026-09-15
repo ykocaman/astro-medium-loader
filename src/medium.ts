@@ -1,19 +1,31 @@
+import path from 'node:path';
 import Parser from 'rss-parser';
 import { fromStorage, toDate, toStorage } from './storage.js';
 import type { MediumConfig, MediumPost } from './types.js';
 
 export const DEFAULT_STORAGE_PATH = '.astro/storage/medium';
 
-type MediumFeedItem = Parser.Item & {
+/** Medium-specific RSS fields not covered by rss-parser's base Item type. */
+type MediumFeedFields = {
 	'content:encoded'?: string;
 	'content:encodedSnippet'?: string;
 };
 
+type MediumFeedItem = Parser.Item & MediumFeedFields;
+
+/** A feed item that has passed the "has a link" filter, guaranteeing `link` is present. */
+type ValidMediumFeedItem = MediumFeedItem & { link: string };
+
+/**
+ * Cache-aware entry point: returns cached posts when storage is enabled and
+ * non-empty, otherwise fetches fresh posts from the Medium RSS feed.
+ */
 export async function getMediumPosts({
 	username,
 	storage,
 }: MediumConfig): Promise<MediumPost[]> {
-	const storageFile = `${storage?.path ?? DEFAULT_STORAGE_PATH}/${username}.json`;
+	const storagePath = storage?.path ?? DEFAULT_STORAGE_PATH;
+	const storageFile = path.join(storagePath, `${username}.json`);
 
 	if (storage?.enabled) {
 		const cached = fromStorage(storageFile);
@@ -22,7 +34,7 @@ export async function getMediumPosts({
 		}
 	}
 
-	const posts = await fetchMediumPosts(username);
+	const posts = await fetchPostsFromFeed(username);
 	// save storage for future use
 	if (storage?.enabled) {
 		toStorage(storageFile, posts);
@@ -30,13 +42,11 @@ export async function getMediumPosts({
 	return posts;
 }
 
-async function fetchMediumPosts(username: string): Promise<MediumPost[]> {
+/** Fetches and parses the Medium RSS feed directly from the network (no cache). */
+async function fetchPostsFromFeed(username: string): Promise<MediumPost[]> {
 	const url = `https://medium.com/feed/@${username}`;
 
-	let feed: Parser.Output<{
-		'content:encoded'?: string;
-		'content:encodedSnippet'?: string;
-	}>;
+	let feed: Parser.Output<MediumFeedFields>;
 	try {
 		feed = await new Parser().parseURL(url);
 	} catch (err) {
@@ -48,14 +58,12 @@ async function fetchMediumPosts(username: string): Promise<MediumPost[]> {
 	return (
 		feed.items
 			// A post without a link is unusable (and would fail the z.url() schema check)
-			.filter((item): item is MediumFeedItem & { link: string } =>
-				Boolean(item.link),
-			)
+			.filter((item): item is ValidMediumFeedItem => Boolean(item.link))
 			.map(toMediumPost)
 	);
 }
 
-function toMediumPost(item: MediumFeedItem & { link: string }): MediumPost {
+function toMediumPost(item: ValidMediumFeedItem): MediumPost {
 	// Post URL without Medium's RSS query string (e.g. ?source=rss-...)
 	const [link = ''] = item.link.split('?');
 	const slug = slugify(item.title ?? '') || slugFromUrl(link) || '';
@@ -69,7 +77,7 @@ function toMediumPost(item: MediumFeedItem & { link: string }): MediumPost {
 		categories: item.categories || [],
 		description: excerpt(item['content:encodedSnippet']),
 		content,
-		canonical: buildCanonicalLink(link, item.title ?? ''),
+		canonical: buildCanonicalNotice(link, item.title ?? ''),
 		heroImage: extractHeroImage(content),
 		slug,
 	};
@@ -93,13 +101,19 @@ function extractHeroImage(content: string): string | undefined {
 	return content.match(/<img[^>]+src=["']([^"'>]+)["']/i)?.[1];
 }
 
+const EXCERPT_WORD_LIMIT = 32;
+
 function excerpt(snippet: string | undefined): string {
 	if (!snippet) return '';
 	const words = snippet.match(/\S+/g) ?? [];
-	return words.slice(0, 32).join(' ') + (words.length > 32 ? '...' : '');
+	return (
+		words.slice(0, EXCERPT_WORD_LIMIT).join(' ') +
+		(words.length > EXCERPT_WORD_LIMIT ? '...' : '')
+	);
 }
 
-function buildCanonicalLink(link: string, title: string): string {
+/** Builds the "read the original post on Medium" attribution HTML appended after the post content. */
+function buildCanonicalNotice(link: string, title: string): string {
 	return `<hr><p>Read the original post on: <a href="${link}" target="_blank">${escapeHtml(title)}</a></p>`;
 }
 
