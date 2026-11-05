@@ -10,11 +10,7 @@ An Astro loader that fetches and parses Medium RSS feeds by username. Supports c
 ## Installation
 
 ```bash
-pnpm install @ykocaman/astro-medium-loader
-# or
-npm install @ykocaman/astro-medium-loader
-# or
-yarn add @ykocaman/astro-medium-loader
+bun add @ykocaman/astro-medium-loader
 ````
 
 ## Usage

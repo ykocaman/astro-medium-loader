@@ -1,7 +1,6 @@
 {
 	"name": "@ykocaman/astro-medium-loader",
 	"version": "0.3.2",
-	"packageManager": "pnpm@11.13.0",
 	"description": "Astro plugin to fetch Medium feeds by username",
 	"author": "https://ykocaman.dev",
 	"type": "module",
@@ -29,7 +28,7 @@
 		"lint:fix": "biome check --write .",
 		"format": "biome format --write .",
 		"test": "vitest run",
-		"prepublishOnly": "npm run build"
+		"prepublishOnly": "bun run build"
 	},
 	"keywords": [
 		"astro",
